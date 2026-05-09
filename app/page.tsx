@@ -1,65 +1,159 @@
-import Image from "next/image";
+'use client';
+import React, { useState, useEffect, SubmitEvent, ChangeEvent } from 'react';
+import { FormData, INITIAL_STATE } from './components/types';
+import { sanitize, stripTags, RATE_LIMIT_MS, RATE_LIMIT_KEY, validate } from './components/utils';
+import TicketHeader from './components/TicketHeader';
+import GeneralFields from './components/GeneralFields';
+import CountrySpecificFields from './components/CountrySpecificFields';
+import SubjectField from './components/SubjectField';
+import DescriptionField from './components/DescriptionField';
+import AttachmentSection from './components/AttachmentSection';
+import VerificationSection from './components/VerificationSection';
+import FormActions from './components/FormActions';
+import StatusToast from './components/StatusToast';
 
-export default function Home() {
+/* ================================================================
+   COMPONENT
+================================================================ */
+export default function TicketForm() {
+  const [formData, setFormData] = useState<FormData>(INITIAL_STATE);
+  const [status, setStatus] = useState<{ type: 'idle' | 'loading' | 'success' | 'error'; message: string }>({
+    type: 'idle',
+    message: '',
+  });
+
+  // Handle Input Changes
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Handle File Attachments
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const maxSize = 40 * 1024 * 1024; // 40MB in bytes
+    const validFiles: File[] = [];
+    const errors: string[] = [];
+
+    files.forEach((file) => {
+      if (file.size > maxSize) {
+        errors.push(`${file.name} is too large. Maximum file size is 40MB.`);
+      } else {
+        validFiles.push(file);
+      }
+    });
+
+    if (errors.length > 0) {
+      setStatus({ type: 'error', message: errors.join(' ') });
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      attachments: [...prev.attachments, ...validFiles],
+    }));
+
+    // Clear the input
+    e.target.value = '';
+  };
+
+  // Remove Attachment
+  const removeAttachment = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      attachments: prev.attachments.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setStatus({ type: 'idle', message: '' });
+
+    // 1. Rate Limiting Check
+    const lastSubmit = parseInt(sessionStorage.getItem(RATE_LIMIT_KEY) || '0', 10);
+    const now = Date.now();
+    if (now - lastSubmit < RATE_LIMIT_MS) {
+      const wait = Math.ceil((RATE_LIMIT_MS - (now - lastSubmit)) / 1000);
+      setStatus({ type: 'error', message: `Please wait ${wait}s before resubmitting.` });
+      return;
+    }
+
+    // 2. Validation & Sanitization
+    const error = validate(formData);
+    if (error) {
+      setStatus({ type: 'error', message: error });
+      return;
+    }
+
+    // Sanitize text fields before sending
+    const cleanData = {
+      ...formData,
+      contactName: stripTags(sanitize(formData.contactName)),
+      subject: stripTags(sanitize(formData.subject)),
+      description: stripTags(sanitize(formData.description)),
+    };
+
+    setStatus({ type: 'loading', message: 'Submitting request...' });
+
+    try {
+      // Logic for submitToAPI would go here (Fetch/Axios)
+      console.log('Sending Sanitized Payload:', cleanData);
+      
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      sessionStorage.setItem(RATE_LIMIT_KEY, Date.now().toString());
+      setStatus({ type: 'success', message: '✅ Ticket submitted successfully!' });
+      setFormData(INITIAL_STATE);
+    } catch (err) {
+      setStatus({ type: 'error', message: '❌ Submission failed. Please try again later.' });
+    }
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <main>
+    <div className="ticket-container">
+      <TicketHeader />
+
+      <form onSubmit={handleSubmit} className="ticket-form">
+        {/* Honeypot Field (Hidden from users) */}
+        <input 
+          type="text" 
+          name="hpWebsite" 
+          style={{ display: 'none' }} 
+          value={formData.hpWebsite} 
+          onChange={handleChange} 
+          tabIndex={-1} 
+          autoComplete="off" 
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+
+        <GeneralFields formData={formData} handleChange={handleChange} />
+
+        <CountrySpecificFields formData={formData} handleChange={handleChange} />
+
+        <SubjectField formData={formData} handleChange={handleChange} />
+
+        <DescriptionField formData={formData} handleChange={handleChange} />
+
+        <AttachmentSection 
+          formData={formData} 
+          handleFileChange={handleFileChange} 
+          removeAttachment={removeAttachment} 
+          setStatus={setStatus} 
+        />
+
+        <VerificationSection />
+
+        <FormActions 
+          status={status} 
+          handleSubmit={handleSubmit} 
+          setFormData={setFormData} 
+          INITIAL_STATE={INITIAL_STATE} 
+        />
+
+        <StatusToast status={status} />
+      </form>
     </div>
+    </main>
   );
-}
+};
