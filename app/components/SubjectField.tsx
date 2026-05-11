@@ -8,8 +8,8 @@ interface SubjectFieldProps {
 export default function SubjectField({ formData, handleChange }: SubjectFieldProps) {
   return (
     <div className="form-group full-width">
-      <label>Subject *</label>
-      <input name="subject" value={formData.subject} onChange={handleChange} required />
+      <label>Subject</label>
+      <input name="subject" value={formData.subject} onChange={handleChange} />
     </div>
   );
 }

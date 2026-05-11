@@ -65,6 +65,14 @@ export default function TicketForm() {
     }));
   };
 
+  const buildSubmissionTemplate = (data: FormData) => ({
+    subject: data.subject || `Support Ticket from ${data.contactName}`,
+    recipients: data.email,
+    html: `<html><body><p>Hello ${data.contactName},</p><p>Your support ticket has been submitted successfully with the following details:</p><ul><li><strong>Country:</strong> ${data.country}</li><li><strong>Case Type:</strong> ${data.caseType}</li><li><strong>Case Reason:</strong> ${data.caseReason}</li><li><strong>Sub-reason:</strong> ${data.subReason || 'N/A'}</li><li><strong>Issue Type:</strong> ${data.issueType}</li><li><strong>Location:</strong> ${data.location}</li><li><strong>Vehicle:</strong> ${data.make} ${data.model}</li><li><strong>Registration:</strong> ${data.carReg}</li><li><strong>Payment Method:</strong> ${data.payment}</li><li><strong>Document Type:</strong> ${data.documentType || 'N/A'}</li><li><strong>Phone:</strong> ${data.phone}</li></ul><p><strong>Description:</strong></p><p>${data.description}</p><p>If you have any questions, please contact Tech Support.</p><p>Best regards,<br>Tech Support</p></body></html>`,
+    attachments: data.attachments.map((file) => ({ name: file.name, type: file.type, size: file.size })),
+    cc: [],
+  });
+
   const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setStatus({ type: 'idle', message: '' });
@@ -96,8 +104,10 @@ export default function TicketForm() {
     setStatus({ type: 'loading', message: 'Submitting request...' });
 
     try {
+      const templatePayload = buildSubmissionTemplate(cleanData);
+
       // Logic for submitToAPI would go here (Fetch/Axios)
-      console.log('Sending Sanitized Payload:', cleanData);
+      console.log('Sending Template Payload:', templatePayload);
       
       // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 2000));

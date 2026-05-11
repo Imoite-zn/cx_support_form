@@ -35,6 +35,10 @@ export const validate = (data: FormData): string | null => {
   if (data.hpWebsite) return "Bot detected.";
   if (!data.contactName || data.contactName.length < 2) return "Contact Name is too short.";
   if (!emailRegex.test(data.email)) return "Please enter a valid email address.";
+  if (!data.phone || data.phone.trim().length < 7) return "Please enter a valid phone number.";
+  if (!data.caseType) return "Please select a case type.";
+  if (!data.caseReason) return "Please select a case reason.";
+  if (!data.escalationPath) return "Please select an escalation path.";
   if (data.description.length < 10) return "Description must be at least 10 characters.";
   if (data.attachments.length > 10) return "Maximum 10 attachments allowed.";
   return null;
