@@ -1,6 +1,8 @@
 import { FormField, inputCls } from './ui/FormField';
 import CustomSelect from './ui/CustomSelect';
 import { FormData } from './types';
+﻿import { FormData } from './types';
+import { countryTemplates } from './constants';
 import React from 'react';
 
 type ChangeEvent = React.ChangeEvent<
@@ -124,6 +126,49 @@ export default function CountrySpecificFields({ formData, handleChange }: Countr
           </FormField>
         );
       })}
+export default function CountrySpecificFields({ formData, handleChange }: CountrySpecificFieldsProps) {
+  const template = countryTemplates[formData.country];
+
+  if (!template) return null;
+
+  return (
+    <div className="country-section">
+      <h3 className="section-title">{template.title}</h3>
+      <div className="form-grid">
+        {template.fields.map((field) => {
+          const value = String(formData[field.name] ?? '');
+
+          return (
+            <div className="form-group" key={`${formData.country}-${field.name}`}>
+              <label>{field.label}</label>
+              {field.type === 'select' ? (
+                <select
+                  name={field.name}
+                  value={value}
+                  onChange={handleChange}
+                  required={field.required}
+                >
+                  <option value="">{field.selectPlaceholder || 'Select ' + field.label.replace(' *', '')}</option>
+                  {field.options?.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  name={field.name}
+                  type={field.inputType || 'text'}
+                  value={value}
+                  placeholder={field.placeholder}
+                  onChange={handleChange}
+                  required={field.required}
+                />
+              )}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

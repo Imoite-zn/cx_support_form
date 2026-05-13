@@ -37,6 +37,30 @@ export default function DescriptionField({
         onBlur={handleBlur}
         placeholder="Describe your issue in detail — the more context you provide, the faster we can help."
         className={`${inputCls(errors.description)} resize-none leading-relaxed`}
+const descriptionLabels = {
+  en: 'Description *',
+  fr: 'Description *',
+  ar: 'الوصف *',
+};
+
+function getLanguage(country: string): 'en' | 'fr' | 'ar' {
+  if (country === 'Morocco') return 'ar';
+  if (country === 'Senegal' || country === "Cote D'ivoire") return 'fr';
+  return 'en';
+}
+
+export default function DescriptionField({ formData, handleChange }: DescriptionFieldProps) {
+  const lang = getLanguage(formData.country);
+
+  return (
+    <div className="form-group full-width">
+      <label>{descriptionLabels[lang]}</label>
+      <textarea 
+        name="description" 
+        rows={6} 
+        value={formData.description} 
+        onChange={handleChange} 
+        required 
       />
       <div className="flex justify-end mt-1">
         <span

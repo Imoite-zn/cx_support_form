@@ -31,6 +31,7 @@ export default function RootLayout({
       <body className="min-h-full">
         <AuthProvider>{children}</AuthProvider>
       </body>
+      <body className="min-h-full flex flex-col" cz-shortcut-listen="true">{children}</body>
     </html>
   );
 }
