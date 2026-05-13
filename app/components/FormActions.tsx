@@ -1,26 +1,46 @@
-import { Loader2, Send } from 'lucide-react';
-import { FormData } from './types';
+import { Loader2, Send, Trash2 } from 'lucide-react';
+import { SubmitStatus } from './types';
 
 interface FormActionsProps {
-  status: { type: 'idle' | 'loading' | 'success' | 'error'; message: string };
-  handleSubmit: (e: React.SubmitEvent<HTMLFormElement>) => void;
-  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
-  INITIAL_STATE: FormData;
+  status: SubmitStatus;
+  onReset: () => void;
 }
 
-export default function FormActions({ status, handleSubmit, setFormData, INITIAL_STATE }: FormActionsProps) {
+export default function FormActions({ status, onReset }: FormActionsProps) {
+  const isLoading = status.type === 'loading';
+
   return (
-    <div className="form-actions">
-      <button 
-        type="submit" 
-        className="btn-submit" 
-        disabled={status.type === 'loading'}
+    <div className="flex flex-col-reverse sm:flex-row items-center justify-between gap-3">
+      {/* Discard */}
+      <button
+        type="button"
+        onClick={onReset}
+        disabled={isLoading}
+        className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg
+          text-sm font-semibold text-gray-400 hover:text-red-500 hover:bg-red-50
+          disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-150"
       >
-        {status.type === 'loading' ? <Loader2 className="spinner" /> : <Send size={18} />}
-        Submit
+        <Trash2 size={14} />
+        Discard changes
       </button>
-      <button type="button" className="btn-discard" onClick={() => setFormData(INITIAL_STATE)}>
-        Discard
+
+      {/* Submit */}
+      <button
+        type="submit"
+        disabled={isLoading}
+        className="w-full sm:w-auto flex items-center justify-center gap-2.5 px-8 py-3 rounded-xl
+          text-sm font-extrabold tracking-wide bg-[#FFB619] text-[#262C59]
+          hover:bg-[#F0AC14] active:scale-[0.98]
+          disabled:opacity-50 disabled:cursor-not-allowed
+          shadow-lg shadow-[#FFB619]/35 hover:shadow-xl hover:shadow-[#FFB619]/25
+          transition-all duration-150"
+      >
+        {isLoading ? (
+          <Loader2 size={16} className="animate-spin" />
+        ) : (
+          <Send size={15} />
+        )}
+        {isLoading ? 'Submitting…' : 'Submit Ticket'}
       </button>
     </div>
   );

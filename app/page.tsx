@@ -1,7 +1,8 @@
 'use client';
-import React, { useState, useEffect, SubmitEvent, ChangeEvent } from 'react';
-import { FormData, INITIAL_STATE } from './components/types';
-import { sanitize, stripTags, RATE_LIMIT_MS, RATE_LIMIT_KEY, validate } from './components/utils';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useTicketForm } from './hooks/useTicketForm';
+import { useAuth } from './providers/AuthProvider';
 import TicketHeader from './components/TicketHeader';
 import GeneralFields from './components/GeneralFields';
 import CountrySpecificFields from './components/CountrySpecificFields';
@@ -11,149 +12,126 @@ import AttachmentSection from './components/AttachmentSection';
 import VerificationSection from './components/VerificationSection';
 import FormActions from './components/FormActions';
 import StatusToast from './components/StatusToast';
+import { Loader2 } from 'lucide-react';
 
-/* ================================================================
-   COMPONENT
-================================================================ */
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-3 mb-6">
+      <div className="w-1 h-4 rounded-full bg-[#FFB619]" />
+      <span className="text-xs font-black text-[#262C59] uppercase tracking-[0.18em]">{children}</span>
+      <div className="flex-1 h-px bg-[#EEF0F8]" />
+    </div>
+  );
+}
+
+function SectionDivider() {
+  return <div className="border-t border-[#EEF0F8] my-8" />;
+}
+
 export default function TicketForm() {
-  const [formData, setFormData] = useState<FormData>(INITIAL_STATE);
-  const [status, setStatus] = useState<{ type: 'idle' | 'loading' | 'success' | 'error'; message: string }>({
-    type: 'idle',
-    message: '',
-  });
+  const { isAuthenticated, isBootstrapping, logout } = useAuth();
+  const router = useRouter();
 
-  // Handle Input Changes
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  useEffect(() => {
+    if (!isBootstrapping && !isAuthenticated) router.replace('/login');
+  }, [isAuthenticated, isBootstrapping, router]);
 
-  // Handle File Attachments
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    const maxSize = 40 * 1024 * 1024; // 40MB in bytes
-    const validFiles: File[] = [];
-    const errors: string[] = [];
+  const {
+    formData, errors, status,
+    handleChange, handleBlur, handleFileChange,
+    removeAttachment, handleSubmit, handleReset, setStatus,
+  } = useTicketForm();
 
-    files.forEach((file) => {
-      if (file.size > maxSize) {
-        errors.push(`${file.name} is too large. Maximum file size is 40MB.`);
-      } else {
-        validFiles.push(file);
-      }
-    });
-
-    if (errors.length > 0) {
-      setStatus({ type: 'error', message: errors.join(' ') });
-      return;
-    }
-
-    setFormData((prev) => ({
-      ...prev,
-      attachments: [...prev.attachments, ...validFiles],
-    }));
-
-    // Clear the input
-    e.target.value = '';
-  };
-
-  // Remove Attachment
-  const removeAttachment = (index: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      attachments: prev.attachments.filter((_, i) => i !== index),
-    }));
-  };
-
-  const handleSubmit = async (e: SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setStatus({ type: 'idle', message: '' });
-
-    // 1. Rate Limiting Check
-    const lastSubmit = parseInt(sessionStorage.getItem(RATE_LIMIT_KEY) || '0', 10);
-    const now = Date.now();
-    if (now - lastSubmit < RATE_LIMIT_MS) {
-      const wait = Math.ceil((RATE_LIMIT_MS - (now - lastSubmit)) / 1000);
-      setStatus({ type: 'error', message: `Please wait ${wait}s before resubmitting.` });
-      return;
-    }
-
-    // 2. Validation & Sanitization
-    const error = validate(formData);
-    if (error) {
-      setStatus({ type: 'error', message: error });
-      return;
-    }
-
-    // Sanitize text fields before sending
-    const cleanData = {
-      ...formData,
-      contactName: stripTags(sanitize(formData.contactName)),
-      subject: stripTags(sanitize(formData.subject)),
-      description: stripTags(sanitize(formData.description)),
-    };
-
-    setStatus({ type: 'loading', message: 'Submitting request...' });
-
-    try {
-      // Logic for submitToAPI would go here (Fetch/Axios)
-      console.log('Sending Sanitized Payload:', cleanData);
-      
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      sessionStorage.setItem(RATE_LIMIT_KEY, Date.now().toString());
-      setStatus({ type: 'success', message: '✅ Ticket submitted successfully!' });
-      setFormData(INITIAL_STATE);
-    } catch (err) {
-      setStatus({ type: 'error', message: '❌ Submission failed. Please try again later.' });
-    }
-  };
+  if (isBootstrapping || !isAuthenticated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F4F6FB]">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 size={32} className="animate-spin text-[#FFB619]" />
+          <p className="text-sm text-gray-400">Loading…</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <main>
-    <div className="ticket-container">
-      <TicketHeader />
+    <main className="min-h-screen bg-[#ECEDF4] py-10 px-4">
+      <div className="w-[60%] mx-auto">
 
-      <form onSubmit={handleSubmit} className="ticket-form">
-        {/* Honeypot Field (Hidden from users) */}
-        <input 
-          type="text" 
-          name="hpWebsite" 
-          style={{ display: 'none' }} 
-          value={formData.hpWebsite} 
-          onChange={handleChange} 
-          tabIndex={-1} 
-          autoComplete="off" 
-        />
+        {/* Unified card — header + form */}
+        <div className="rounded-2xl border border-[#DDE0EF] shadow-xl shadow-[#262C59]/[0.08] overflow-hidden">
 
-        <GeneralFields formData={formData} handleChange={handleChange} />
+          {/* Navy header — top of the card */}
+          <TicketHeader onSignOut={logout} />
 
-        <CountrySpecificFields formData={formData} handleChange={handleChange} />
+          {/* Form body */}
+          <div className="bg-white">
+            <form onSubmit={handleSubmit} noValidate>
+              <input type="text" name="hpWebsite" style={{ display: 'none' }}
+                value={formData.hpWebsite} onChange={handleChange} tabIndex={-1} autoComplete="off" />
 
-        <SubjectField formData={formData} handleChange={handleChange} />
+              <div className="px-10 pt-8 pb-2">
+                <SectionLabel>Contact &amp; Case Information</SectionLabel>
+                <GeneralFields
+                  formData={formData} errors={errors}
+                  handleChange={handleChange} handleBlur={handleBlur}
+                />
+              </div>
 
-        <DescriptionField formData={formData} handleChange={handleChange} />
+              <SectionDivider />
 
-        <AttachmentSection 
-          formData={formData} 
-          handleFileChange={handleFileChange} 
-          removeAttachment={removeAttachment} 
-          setStatus={setStatus} 
-        />
+              <div className="px-10 py-2 pb-4">
+                <SectionLabel>{formData.country || 'Country'} — Vehicle Details</SectionLabel>
+                <CountrySpecificFields formData={formData} handleChange={handleChange} />
+              </div>
 
-        <VerificationSection />
+              <SectionDivider />
 
-        <FormActions 
-          status={status} 
-          handleSubmit={handleSubmit} 
-          setFormData={setFormData} 
-          INITIAL_STATE={INITIAL_STATE} 
-        />
+              <div className="px-10 py-2 pb-4">
+                <SectionLabel>Ticket Details</SectionLabel>
+                <div className="flex flex-col gap-5">
+                  <SubjectField
+                    formData={formData} errors={errors}
+                    handleChange={handleChange} handleBlur={handleBlur}
+                  />
+                  <DescriptionField
+                    formData={formData} errors={errors}
+                    handleChange={handleChange} handleBlur={handleBlur}
+                  />
+                </div>
+              </div>
 
-        <StatusToast status={status} />
-      </form>
-    </div>
+              <SectionDivider />
+
+              <div className="px-10 py-2 pb-6">
+                <SectionLabel>Attachments</SectionLabel>
+                <AttachmentSection
+                  formData={formData}
+                  handleFileChange={handleFileChange}
+                  removeAttachment={removeAttachment}
+                />
+              </div>
+
+              {/* Submit footer */}
+              <div className="px-10 py-7 bg-[#F8F9FC] border-t border-[#EEF0F8]">
+                <div className="flex flex-col gap-5">
+                  <VerificationSection />
+                  {status.message && (
+                    <StatusToast
+                      status={status}
+                      onDismiss={() => setStatus({ type: 'idle', message: '' })}
+                    />
+                  )}
+                  <FormActions status={status} onReset={handleReset} />
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <p className="text-center text-[10px] text-gray-400/70 mt-6 pb-4 tracking-wide">
+          © {new Date().getFullYear()} Autochek Africa · Customer Experience Portal
+        </p>
+      </div>
     </main>
   );
-};
+}

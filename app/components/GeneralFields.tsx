@@ -1,71 +1,140 @@
-import { FormData } from './types';
+import { FormField, inputCls } from './ui/FormField';
+import CustomSelect from './ui/CustomSelect';
+import { FormData, FormErrors } from './types';
+
+type ChangeEvent = React.ChangeEvent<
+  HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+>;
+type BlurEvent = React.FocusEvent<
+  HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+>;
 
 interface GeneralFieldsProps {
   formData: FormData;
-  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
+  errors: FormErrors;
+  handleChange: (e: ChangeEvent | { target: { name: string; value: string } }) => void;
+  handleBlur: (e: BlurEvent) => void;
 }
 
-export default function GeneralFields({ formData, handleChange }: GeneralFieldsProps) {
+export default function GeneralFields({
+  formData,
+  errors,
+  handleChange,
+  handleBlur,
+}: GeneralFieldsProps) {
   return (
-    <div className="form-grid">
-      {/* Row 1 */}
-      <div className="form-group">
-        <label>Country *</label>
-        <select name="country" value={formData.country} onChange={handleChange}>
-          <option value="Kenya">Kenya</option>
-          <option value="Nigeria">Nigeria</option>
-          <option value="Ghana">Ghana</option>
-          <option value="Morocco">Morocco</option>
-          <option value="Senegal">Senegal</option>
-          <option value="Cote D'ivoire">Cote D'ivoire</option>
-        </select>
-      </div>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+      {/* Contact Name */}
+      <FormField label="Contact Name" required error={errors.contactName}>
+        <input
+          name="contactName"
+          value={formData.contactName}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          placeholder="Full name"
+          className={inputCls(errors.contactName)}
+        />
+      </FormField>
 
-      <div className="form-group">
-        <label>Contact Name *</label>
-        <input name="contactName" value={formData.contactName} onChange={handleChange} required />
-      </div>
+      {/* Email */}
+      <FormField label="Email Address" required error={errors.email}>
+        <input
+          type="email"
+          name="email"
+          value={formData.email}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          placeholder="you@example.com"
+          className={inputCls(errors.email)}
+        />
+      </FormField>
 
-      {/* Row 2 */}
-      <div className="form-group">
-        <label>Case Type *</label>
-        <select name="caseType" value={formData.caseType} onChange={handleChange}>
-          <option value="Complaint">Complaint</option>
-          <option value="Inquiry">Inquiry</option>
-        </select>
-      </div>
+      {/* Country */}
+      <FormField label="Country" required>
+        <CustomSelect
+          name="country"
+          value={formData.country}
+          options={["Kenya","Nigeria","Ghana","Morocco","Senegal","Cote D'ivoire"]}
+          onChange={handleChange}
+        />
+      </FormField>
 
-      <div className="form-group">
-        <label>Case Type Reason *</label>
-        <select name="caseReason" value={formData.caseReason} onChange={handleChange}>
-          <option value="CMP- AMC Issue">CMP- AMC Issue</option>
-        </select>
-      </div>
+      {/* Phone */}
+      <FormField label="Phone Number" required error={errors.phone}>
+        <input
+          type="tel"
+          name="phone"
+          value={formData.phone}
+          onChange={handleChange}
+          onBlur={handleBlur}
+          placeholder="+254 700 000 000"
+          className={inputCls(errors.phone)}
+        />
+      </FormField>
 
-      {/* Additional Fields from image */}
-      <div className="form-group">
-        <label>Case Type Sub-reason *</label>
-        <select name="subReason" value={formData.subReason} onChange={handleChange}>
-          <option value="">-None-</option>
-        </select>
-      </div>
+      {/* Case Type */}
+      <FormField label="Case Type" required>
+        <CustomSelect
+          name="caseType"
+          value={formData.caseType}
+          options={["Complaint","Inquiry","Request","Suggestion/Feedback","Junks","Internal Communication","VAP Campaign","Other"]}
+          onChange={handleChange}
+        />
+      </FormField>
 
-      <div className="form-group">
-        <label>Type of issue *</label>
-        <select name="issueType" value={formData.issueType} onChange={handleChange}>
-          <option value="Vehicle issues/Faulty car">Vehicle issues/Faulty car</option>
-        </select>
-      </div>
+      {/* Escalation Path */}
+      <FormField label="Escalation Path" required error={errors.escalationPath}>
+        <CustomSelect
+          name="escalationPath"
+          value={formData.escalationPath}
+          placeholder="Select Escalation Path"
+          options={["None","N/A","Operations","AFS","The Customer","Bank Engagement","Bank Operations","Finance","Telematics","Customer Success Partner","Legal","Repo","Customer Experience","Marketing","HR"]}
+          error={errors.escalationPath}
+          onChange={handleChange}
+        />
+      </FormField>
 
-      <div className="form-group">
-        <label>Email</label>
-        <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="you@example.com" />
-      </div>
+      {/* Case Type Reason */}
+      <FormField label="Case Type Reason" required>
+        <CustomSelect
+          name="caseReason"
+          value={formData.caseReason}
+          options={["CMP- AMC Issue","CMP- Application Issue","CMP- Service Centre Issue","CMP- Product Knowledge Issue","CMP- Rude Staff","CMP- Faulty Vehicle","CMP- Car Delivery Issue","CMP- Wrong Transaction","CMP- Repayment not updated","CMP- Car Documents","CMP- Liquidation Issue","CMP- Loan Restructuring Issue","CMP- Dealer Management","CMP- Vehicle Repossession","CMP- Wrong Plate Number","CMP- Loan Repayment Issue","CMP- CAC Document Issue","CMP Bank- Faulty Vehicle","CMP Bank- Document Issue","CMP Bank- PFI Issue","CMP- Account Statement Issue","Final Message for Repossession"]}
+          onChange={handleChange}
+        />
+      </FormField>
 
-      <div className="form-group">
-        <label>Phone *</label>
-        <input type="tel" name="phone" value={formData.phone} onChange={handleChange} required />
-      </div>
+      {/* Case Type Sub-reason */}
+      <FormField label="Case Type Sub-reason">
+        <CustomSelect
+          name="subReason"
+          value={formData.subReason}
+          placeholder="— None —"
+          options={[]}
+          onChange={handleChange}
+        />
+      </FormField>
+
+      {/* Type of Issue */}
+      <FormField label="Type of Issue" required>
+        <CustomSelect
+          name="issueType"
+          value={formData.issueType}
+          options={["Vehicle issues/Faulty car","Tracker issues","Insurance Claim","Document Renewal","Vehicle Servicing","Loan Payments","Loan Liquidation","General Inquiry","Promotional Emails","Internal Request","Apprehension","Repair Finance request","Robbery","Expired Doc","AMC","Accident","Others"]}
+          onChange={handleChange}
+        />
+      </FormField>
+
+      {/* Document Type */}
+      <FormField label="Document Type">
+        <CustomSelect
+          name="documentType"
+          value={formData.documentType}
+          placeholder="Select Document Type"
+          options={["ID","License","Vehicle Papers","Insurance","Other"]}
+          onChange={handleChange}
+        />
+      </FormField>
     </div>
   );
 }
