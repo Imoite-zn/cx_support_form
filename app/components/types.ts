@@ -13,7 +13,6 @@ export interface FormData {
   make: string;
   model: string;
   carReg: string;
-  payment: string;
   documentType: string;
   subject: string;
   description: string;
@@ -36,7 +35,6 @@ export const INITIAL_STATE: FormData = {
   make: '',
   model: '',
   carReg: '',
-  payment: 'Cash',
   documentType: '',
   subject: '',
   description: '',

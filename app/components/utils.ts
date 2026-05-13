@@ -1,4 +1,5 @@
 import { FormData } from './types';
+import { RATE_LIMIT_MS, RATE_LIMIT_KEY } from './constants';
 
 export const sanitize = (str: string): string => {
   if (typeof str !== 'string') return '';
@@ -19,9 +20,6 @@ export const sanitize = (str: string): string => {
 
 export const stripTags = (str: string): string => str.replace(/<[^>]*>/g, '').trim();
 
-export const RATE_LIMIT_MS = 30000;
-export const RATE_LIMIT_KEY = 'ticket_submit_limit';
-
 export const formatFileSize = (bytes: number): string => {
   if (bytes === 0) return '0 Bytes';
   const k = 1024;
@@ -36,6 +34,7 @@ export const validate = (data: FormData): string | null => {
   if (!data.contactName || data.contactName.length < 2) return "Contact Name is too short.";
   if (!emailRegex.test(data.email)) return "Please enter a valid email address.";
   if (!data.phone || data.phone.trim().length < 7) return "Please enter a valid phone number.";
+  if (!data.subject || data.subject.trim().length < 5) return "Please enter a subject with at least 5 characters.";
   if (!data.caseType) return "Please select a case type.";
   if (!data.caseReason) return "Please select a case reason.";
   if (!data.escalationPath) return "Please select an escalation path.";

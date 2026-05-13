@@ -1,0 +1,76 @@
+{
+  "name": "support_ticket_submission",
+  "description": "Template for submitting support tickets to customer experience teams",
+  "audienceType": "Customer",
+  "category": "Operational",
+  "renderByUs": true,
+  "providerId": "autochek_support_system",
+  "channels": [
+    {
+      "channel": "email",
+      "contentType": "html",
+      "languages": [
+        {
+          "language": "en",
+          "subject": "New Support Ticket Submission - {{subject}}",
+          "body": "<html><body><p>Dear Customer Experience Team,</p><p>A new support ticket has been submitted with the following details:</p><ul><li><strong>Country:</strong> {{country}}</li><li><strong>Case Type:</strong> {{caseType}}</li><li><strong>Case Reason:</strong> {{caseReason}}</li><li><strong>Sub-reason:</strong> {{subReason}}</li><li><strong>Issue Type:</strong> {{issueType}}</li><li><strong>Location:</strong> {{location}}</li><li><strong>Vehicle:</strong> {{make}} {{model}}</li><li><strong>Registration:</strong> {{carReg}}</li><li><strong>Document Type:</strong> {{documentType}}</li><li><strong>Phone:</strong> {{phone}}</li></ul><p><strong>Description:</strong></p><p>{{description}}</p><p>Please review and respond to the customer accordingly.</p><p>Best regards,<br>Support System</p></body></html>",
+          "variables": [
+            {"name": "subject", "varType": "string", "mandatory": false},
+            {"name": "country", "varType": "string", "mandatory": true},
+            {"name": "caseType", "varType": "string", "mandatory": true},
+            {"name": "caseReason", "varType": "string", "mandatory": true},
+            {"name": "subReason", "varType": "string", "mandatory": false},
+            {"name": "issueType", "varType": "string", "mandatory": true},
+            {"name": "location", "varType": "string", "mandatory": false},
+            {"name": "make", "varType": "string", "mandatory": false},
+            {"name": "model", "varType": "string", "mandatory": false},
+            {"name": "carReg", "varType": "string", "mandatory": false},
+            {"name": "documentType", "varType": "string", "mandatory": false},
+            {"name": "phone", "varType": "string", "mandatory": true},
+            {"name": "description", "varType": "string", "mandatory": true}
+          ]
+        },
+        {
+          "language": "fr",
+          "subject": "Nouvelle soumission de ticket de support - {{subject}}",
+          "body": "<html><body><p>Cher équipe d'expérience client,</p><p>Un nouveau ticket de support a été soumis avec les détails suivants:</p><ul><li><strong>Pays:</strong> {{country}}</li><li><strong>Type de cas:</strong> {{caseType}}</li><li><strong>Raison du type de cas:</strong> {{caseReason}}</li><li><strong>Sous-raison:</strong> {{subReason}}</li><li><strong>Type de problème:</strong> {{issueType}}</li><li><strong>Région:</strong> {{location}}</li><li><strong>Véhicule:</strong> {{make}} {{model}}</li><li><strong>Immatriculation:</strong> {{carReg}}</li><li><strong>Type de document:</strong> {{documentType}}</li><li><strong>Téléphone:</strong> {{phone}}</li></ul><p><strong>Description:</strong></p><p>{{description}}</p><p>Veuillez examiner et répondre au client en conséquence.</p><p>Cordialement,<br>Système de support</p></body></html>",
+          "variables": [
+            {"name": "subject", "varType": "string", "mandatory": false},
+            {"name": "country", "varType": "string", "mandatory": true},
+            {"name": "caseType", "varType": "string", "mandatory": true},
+            {"name": "caseReason", "varType": "string", "mandatory": true},
+            {"name": "subReason", "varType": "string", "mandatory": false},
+            {"name": "issueType", "varType": "string", "mandatory": true},
+            {"name": "location", "varType": "string", "mandatory": false},
+            {"name": "make", "varType": "string", "mandatory": false},
+            {"name": "model", "varType": "string", "mandatory": false},
+            {"name": "carReg", "varType": "string", "mandatory": false},
+            {"name": "documentType", "varType": "string", "mandatory": false},
+            {"name": "phone", "varType": "string", "mandatory": true},
+            {"name": "description", "varType": "string", "mandatory": true}
+          ]
+        },
+        {
+          "language": "ar",
+          "subject": "تقديم تذكرة دعم جديدة - {{subject}}",
+          "body": "<html><body><p>عزيزي فريق تجربة العميل،</p><p>تم تقديم تذكرة دعم جديدة مع التفاصيل التالية:</p><ul><li><strong>البلد:</strong> {{country}}</li><li><strong>نوع الحالة:</strong> {{caseType}}</li><li><strong>سبب نوع الحالة:</strong> {{caseReason}}</li><li><strong>سبب فرعي:</strong> {{subReason}}</li><li><strong>نوع المشكلة:</strong> {{issueType}}</li><li><strong>المدينة/المنطقة:</strong> {{location}}</li><li><strong>السيارة:</strong> {{make}} {{model}}</li><li><strong>التسجيل:</strong> {{carReg}}</li><li><strong>نوع الوثيقة:</strong> {{documentType}}</li><li><strong>الهاتف:</strong> {{phone}}</li></ul><p><strong>الوصف:</strong></p><p>{{description}}</p><p>يرجى مراجعة والرد على العميل وفقاً لذلك.</p><p>مع خالص التحية،<br>نظام الدعم</p></body></html>",
+          "variables": [
+            {"name": "subject", "varType": "string", "mandatory": false},
+            {"name": "country", "varType": "string", "mandatory": true},
+            {"name": "caseType", "varType": "string", "mandatory": true},
+            {"name": "caseReason", "varType": "string", "mandatory": true},
+            {"name": "subReason", "varType": "string", "mandatory": false},
+            {"name": "issueType", "varType": "string", "mandatory": true},
+            {"name": "location", "varType": "string", "mandatory": false},
+            {"name": "make", "varType": "string", "mandatory": false},
+            {"name": "model", "varType": "string", "mandatory": false},
+            {"name": "carReg", "varType": "string", "mandatory": false},
+            {"name": "documentType", "varType": "string", "mandatory": false},
+            {"name": "phone", "varType": "string", "mandatory": true},
+            {"name": "description", "varType": "string", "mandatory": true}
+          ]
+        }
+      ]
+    }
+  ]
+}
