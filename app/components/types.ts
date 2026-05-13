@@ -20,6 +20,13 @@ export interface FormData {
   hpWebsite: string; // Honeypot
 }
 
+export type FormErrors = Partial<Record<keyof FormData, string>>;
+
+export type SubmitStatus = {
+  type: 'idle' | 'loading' | 'success' | 'error';
+  message: string;
+};
+
 export const INITIAL_STATE: FormData = {
   country: 'Kenya',
   contactName: '',
